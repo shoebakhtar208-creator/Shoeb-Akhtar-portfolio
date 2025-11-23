@@ -1,0 +1,227 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Robot Asset Test Harness</title>
+    <style>
+        body { margin: 0; background: #050505; color: white; font-family: sans-serif; overflow: hidden; }
+        #info { position: absolute; top: 20px; left: 20px; z-index: 100; background: rgba(0,0,0,0.8); padding: 20px; border-radius: 8px; }
+        #controls { margin-top: 20px; }
+        input[type=range] { width: 100%; margin: 10px 0; }
+        button { background: #D4AF37; border: none; padding: 8px 16px; color: black; font-weight: bold; cursor: pointer; }
+        #error-log { color: #ff4444; font-family: monospace; margin-top: 10px; font-size: 12px; }
+    </style>
+    <!-- Import Maps for Three.js -->
+    <script type="importmap">
+        {
+            "imports": {
+                "three": "https://unpkg.com/three@0.160.0/build/three.module.js",
+                "three/addons/": "https://unpkg.com/three@0.160.0/examples/jsm/"
+            }
+        }
+    </script>
+</head>
+<body>
+    <div id="info">
+        <h2>🤖 Robot Asset Validator</h2>
+        <p>Load Status: <span id="status">Initializing...</span></p>
+        <div id="controls">
+            <label>Scroll Simulation (0% - 100%)</label>
+            <input type="range" id="scrollSlider" min="0" max="1" step="0.001" value="0">
+            
+            <div style="display: flex; gap: 10px; margin-top: 10px;">
+                <button id="btnPlay">Auto Play</button>
+                <button id="btnDebug">Toggle Debug</button>
+            </div>
+        </div>
+        <div id="error-log"></div>
+    </div>
+
+    <script type="module">
+        import * as THREE from 'three';
+        import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
+        import { DRACOLoader } from 'three/addons/loaders/DRACOLoader.js';
+        import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+        // --- CONFIGURATION ---
+        const MODEL_PATH = 'https://threejs.org/examples/models/gltf/RobotExpressive/RobotExpressive.glb'; 
+        
+        // --- SETUP ---
+        const scene = new THREE.Scene();
+        scene.fog = new THREE.Fog('#050505', 5, 25);
+        
+        const camera = new THREE.PerspectiveCamera(45, window.innerWidth / window.innerHeight, 0.1, 100);
+        camera.position.set(0, 0, 10);
+        
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.toneMapping = THREE.ACESFilmicToneMapping;
+        document.body.appendChild(renderer.domElement);
+
+        const controls = new OrbitControls(camera, renderer.domElement);
+        controls.enableDamping = true;
+
+        // --- LIGHTING (Matches Scene3D.tsx) ---
+        // 1. Ambient (High intensity)
+        const ambient = new THREE.AmbientLight(0xffffff, 2.0);
+        scene.add(ambient);
+        
+        // 2. Key Light (Front)
+        const keyLight = new THREE.DirectionalLight(0xffffff, 1.2);
+        keyLight.position.set(2, 5, 5);
+        scene.add(keyLight);
+
+        // 3. Rim Light (Yellow Back)
+        const rimLight = new THREE.SpotLight(0xFFD53D, 5.0);
+        rimLight.position.set(0, 5, -5);
+        rimLight.distance = 20;
+        scene.add(rimLight);
+        
+        const rimFillL = new THREE.PointLight(0xFFD53D, 2.0);
+        rimFillL.position.set(-5, 0, -5);
+        scene.add(rimFillL);
+        
+        const rimFillR = new THREE.PointLight(0xFFD53D, 2.0);
+        rimFillR.position.set(5, 0, -5);
+        scene.add(rimFillR);
+
+        // --- HELPERS ---
+        const grid = new THREE.GridHelper(20, 20, 0x444444, 0x222222);
+        scene.add(grid);
+        const axes = new THREE.AxesHelper(2);
+        scene.add(axes);
+
+        // --- LOADER ---
+        const dracoLoader = new DRACOLoader();
+        dracoLoader.setDecoderPath('https://www.gstatic.com/draco/versioned/decoders/1.5.6/');
+
+        const loader = new GLTFLoader();
+        loader.setDRACOLoader(dracoLoader);
+
+        let robotRoot = null;
+        let mixer = null;
+
+        document.getElementById('status').innerText = `Loading ${MODEL_PATH}...`;
+
+        loader.load(
+            MODEL_PATH,
+            (gltf) => {
+                document.getElementById('status').innerText = "Loaded Successfully ✅";
+                robotRoot = gltf.scene;
+                
+                // Center and scale
+                robotRoot.position.set(2, -2.5, 0); 
+                robotRoot.scale.set(0.5, 0.5, 0.5); 
+                
+                // --- MATERIAL OVERRIDES ---
+                robotRoot.traverse((child) => {
+                    if (child.isMesh) {
+                         const oldMat = child.material;
+                         const name = child.name.toLowerCase();
+                         const isEye = name.includes('eye') || name.includes('light') || name.includes('lens');
+
+                         const newMat = new THREE.MeshStandardMaterial({
+                            skinning: true,
+                            normalMap: oldMat.normalMap,
+                            color: new THREE.Color(isEye ? '#00A8FF' : '#FFFFFF'),
+                            metalness: isEye ? 0.0 : 0.3,
+                            roughness: isEye ? 0.0 : 0.35,
+                            emissive: new THREE.Color(isEye ? '#00A8FF' : '#000000'),
+                            emissiveIntensity: isEye ? 3.0 : 0.0,
+                            toneMapped: !isEye 
+                         });
+                         child.material = newMat;
+                    }
+                });
+
+                scene.add(robotRoot);
+
+                // Setup Animations
+                if (gltf.animations.length) {
+                    mixer = new THREE.AnimationMixer(robotRoot);
+                    const clip = THREE.AnimationClip.findByName(gltf.animations, 'Idle') || gltf.animations[0];
+                    if(clip) {
+                        const action = mixer.clipAction(clip);
+                        action.play();
+                    }
+                }
+            },
+            (xhr) => {
+                const pct = (xhr.loaded / xhr.total * 100).toFixed(0);
+                if(pct !== "Infinity") document.getElementById('status').innerText = `Loading... ${pct}%`;
+            },
+            (error) => {
+                document.getElementById('status').innerText = "Failed to Load ❌";
+                document.getElementById('error-log').innerText = error.message;
+                console.error(error);
+            }
+        );
+
+        // --- ANIMATION LOOP ---
+        const clock = new THREE.Clock();
+        let isAutoPlaying = false;
+        const slider = document.getElementById('scrollSlider');
+
+        function animate() {
+            requestAnimationFrame(animate);
+            const delta = clock.getDelta();
+            const time = clock.getElapsedTime();
+
+            // Auto Play Logic
+            if (isAutoPlaying) {
+                let val = parseFloat(slider.value);
+                val += delta * 0.2;
+                if (val > 1) val = 0;
+                slider.value = val;
+            }
+
+            const scrollOffset = parseFloat(slider.value); // 0 to 1
+
+            // --- SIMULATING Scene3D.tsx BEHAVIOR ---
+            const targetZ = 10 - (scrollOffset * 5);
+            const targetY = 0 - (scrollOffset * 2);
+            camera.position.z = THREE.MathUtils.lerp(camera.position.z, targetZ, 0.1);
+            camera.position.y = THREE.MathUtils.lerp(camera.position.y, targetY, 0.1);
+            camera.lookAt(0, 0, 0);
+
+            if (robotRoot) {
+                robotRoot.rotation.y = (time * 0.1) + (scrollOffset * Math.PI * 2);
+                robotRoot.rotation.z = Math.sin(time) * 0.02;
+            }
+
+            if (mixer) mixer.update(delta);
+            controls.update();
+            renderer.render(scene, camera);
+        }
+
+        animate();
+
+        // --- UI EVENTS ---
+        document.getElementById('btnPlay').addEventListener('click', () => {
+            isAutoPlaying = !isAutoPlaying;
+            document.getElementById('btnPlay').innerText = isAutoPlaying ? "Pause" : "Auto Play";
+        });
+
+        document.getElementById('btnDebug').addEventListener('click', () => {
+            if (robotRoot) {
+                scene.traverse(c => {
+                    if (c.isSkeletonHelper) c.visible = !c.visible;
+                });
+                if (!scene.getObjectByName('skelHelper')) {
+                    const h = new THREE.SkeletonHelper(robotRoot);
+                    h.name = 'skelHelper';
+                    scene.add(h);
+                }
+            }
+        });
+
+        window.addEventListener('resize', () => {
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+            renderer.setSize(window.innerWidth, window.innerHeight);
+        });
+    </script>
+</body>
+</html>
