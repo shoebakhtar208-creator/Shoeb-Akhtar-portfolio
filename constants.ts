@@ -31,7 +31,7 @@ export const BEE_CONFIG = {
   SPEED_RANGE: [0.8, 1.5],
   WANDER_INTERVAL: [2000, 6000],
   AVOID_RADIUS_PX: 120,
-  SCALE: 0.15 // Updated to 0.45 in prompt but keeping existing consistent unless requested
+  SCALE: 0.45 
 };
 
 export const LINKS = {
