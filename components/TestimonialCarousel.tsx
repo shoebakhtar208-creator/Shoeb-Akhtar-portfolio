@@ -159,8 +159,8 @@ export const TestimonialCarousel = () => {
             style={{ 
                 width: 'var(--card-width)',
                 // CSS variable logic for responsive width
-                '--card-width': `clamp(${CAROUSEL_CONFIG.CARD_WIDTH_MOBILE}px, 30vw, ${CAROUSEL_CONFIG.CARD_WIDTH_DESKTOP}px)` as any
-            }}
+                '--card-width': `clamp(${CAROUSEL_CONFIG.CARD_WIDTH_MOBILE}px, 30vw, ${CAROUSEL_CONFIG.CARD_WIDTH_DESKTOP}px)`
+            } as React.CSSProperties}
           >
             <GlassCard 
                 className="h-full flex flex-col justify-between hover:!scale-100" 

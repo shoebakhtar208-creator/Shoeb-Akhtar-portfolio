@@ -3,6 +3,8 @@ import React, { useRef, useMemo, useState, useEffect, Suspense } from 'react';
 import { useFrame, useThree } from '@react-three/fiber';
 import { useScroll, Float, Stars, useGLTF, useAnimations, Image } from '@react-three/drei';
 import * as THREE from 'three';
+import { ROBOT_ASSETS } from '../constants';
+import FlyingBee3D from './FlyingBee3D';
 
 // Fix for missing JSX types in this environment
 // Augmenting both global JSX and React.JSX to handle different TS/React versions
@@ -22,6 +24,10 @@ declare global {
       instancedMesh: any;
       dodecahedronGeometry: any;
       meshBasicMaterial: any;
+      capsuleGeometry: any;
+      torusGeometry: any;
+      sphereGeometry: any;
+      coneGeometry: any;
     }
   }
 }
@@ -43,6 +49,10 @@ declare module 'react' {
       instancedMesh: any;
       dodecahedronGeometry: any;
       meshBasicMaterial: any;
+      capsuleGeometry: any;
+      torusGeometry: any;
+      sphereGeometry: any;
+      coneGeometry: any;
     }
   }
 }
@@ -90,7 +100,7 @@ const Fallback2D = () => {
   return (
     <group ref={group} position={[2, -2.5, 0]}>
        <Image 
-        url="https://images.unsplash.com/photo-1485827404703-89b55fcc595e?q=80&w=1000&auto=format&fit=crop"
+        url={ROBOT_ASSETS.FALLBACK_IMAGE}
         scale={[4, 5.5]} // Matches the visual footprint (silhouette) of the RobotExpressive model
         transparent 
         opacity={0.95}
@@ -252,17 +262,11 @@ const ProgressiveRobot = () => {
   const [loadError, setLoadError] = useState(false);
   const isMobile = window.innerWidth < 768;
 
-  // Use string paths directly to avoid dependency on missing constants in this context snippet if any
-  const ASSETS = {
-     HIGH: 'https://threejs.org/examples/models/gltf/RobotExpressive/RobotExpressive.glb',
-     MED: 'https://threejs.org/examples/models/gltf/RobotExpressive/RobotExpressive.glb'
-  };
-
   useEffect(() => {
     // Simulate progressive loading or actually preload
     if (!isMobile && !loadError) {
       try {
-        useGLTF.preload(ASSETS.HIGH);
+        useGLTF.preload(ROBOT_ASSETS.HIGH);
         // In a real scenario, we might listen to a loader manager. 
         // Here we assume if preload doesn't throw immediately, we upgrade after a short delay.
         const timer = setTimeout(() => setHighQualityLoaded(true), 1000);
@@ -282,9 +286,9 @@ const ProgressiveRobot = () => {
       <Suspense fallback={null}>
         <RobotErrorBoundary onError={() => setLoadError(true)}>
            {highQualityLoaded && !isMobile ? (
-             <RobotModel url={ASSETS.HIGH} highQuality={true} />
+             <RobotModel url={ROBOT_ASSETS.HIGH} highQuality={true} />
            ) : (
-             <RobotModel url={ASSETS.MED} />
+             <RobotModel url={ROBOT_ASSETS.MED} />
            )}
         </RobotErrorBoundary>
       </Suspense>
@@ -393,7 +397,8 @@ export const Scene3D: React.FC = () => {
         <ProgressiveRobot />
       </Float>
       
-      {/* Bee removed to restore stability */}
+      {/* Animated Bee */}
+      <FlyingBee3D />
       
       <Particles count={300} />
       

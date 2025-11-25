@@ -11,26 +11,25 @@ import { TestimonialCarousel } from './TestimonialCarousel';
 // --- SECTIONS ---
 
 const HeroSection = () => (
-  <section className="w-full h-screen flex flex-col lg:flex-row items-center justify-center lg:justify-start px-6 lg:px-20 max-w-screen-xl mx-auto gap-8 lg:gap-16">
+  // RELATIVE positioning ensures the absolute Moon stays contained in this section
+  <section className="relative w-full h-screen flex flex-col justify-center px-6 lg:px-20 max-w-screen-xl mx-auto">
     
-    {/* Left: Animated Moon Character */}
-    <div className="flex-shrink-0 order-1 lg:order-none">
-      <AnimatedMoon />
-    </div>
+    {/* MOON: Placed here. The component handles its own absolute positioning & z-index. */}
+    <AnimatedMoon />
 
-    {/* Right: Text Content */}
+    {/* Text Content: z-10 ensures it sits ABOVE the moon visually */}
     <motion.div 
       initial={{ opacity: 0, x: 50 }}
       whileInView={{ opacity: 1, x: 0 }}
       transition={{ duration: 1 }}
-      className="max-w-3xl z-10 text-center lg:text-left"
+      className="max-w-3xl z-10 text-center lg:text-left relative ml-0 lg:ml-10"
     >
       <h2 className="text-gold-400 font-sans tracking-[0.2em] text-sm mb-4 uppercase">International Digital Strategist</h2>
       <h1 className="text-6xl md:text-8xl font-serif font-bold mb-6 leading-tight text-transparent bg-clip-text bg-gradient-to-r from-white via-gray-200 to-gray-500">
         Shoeb Akhtar
       </h1>
       <p className="text-lg md:text-xl text-gray-300 mb-10 leading-relaxed max-w-2xl backdrop-blur-sm mx-auto lg:mx-0">
-        Worked with <span className="text-white font-bold">250+ clients</span>. Generated billions of views & massive sales using Performance Marketing, Content Marketing, Paid Ads, AI Agent Automation, Data Science & ML.
+        I have worked with <span className="text-white font-bold">250+ clients</span> and generated billions of views — creating high-converting sales, qualified leads, and strong engagement. I achieve this through performance marketing powered by data science, AI automation, and machine learning to maximize ROI.
       </p>
       
       <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">

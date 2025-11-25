@@ -1,129 +1,156 @@
+
 import React, { useEffect, useState } from 'react';
 import { motion, useSpring, useMotionValue } from 'framer-motion';
 
 export const AnimatedMoon = () => {
   const [isBlinking, setIsBlinking] = useState(false);
+  const [isSmiling, setIsSmiling] = useState(false);
   
-  // Motion values for tracking (relative offset in pixels)
+  // --- CURSOR TRACKING ---
   const mouseX = useMotionValue(0);
   const mouseY = useMotionValue(0);
   
-  // Smooth spring physics for eye movement (Ease: easeOutQuad-ish feel via damping)
+  // Soft, realistic spring physics
   const springConfig = { damping: 25, stiffness: 150 };
   const x = useSpring(mouseX, springConfig);
   const y = useSpring(mouseY, springConfig);
 
   useEffect(() => {
-    // --- 1. IDLE ANIMATION (Blinking) ---
-    let blinkTimeout: ReturnType<typeof setTimeout>;
-    
-    const blinkLoop = () => {
-      // Random interval between 1s and 3s
-      const nextBlink = Math.random() * 2000 + 1000; 
-      
-      blinkTimeout = setTimeout(() => {
-        setIsBlinking(true);
-        
-        // Blink duration: 150ms
-        setTimeout(() => {
-          setIsBlinking(false);
-          blinkLoop();
-        }, 150);
-      }, nextBlink);
-    };
-    
-    blinkLoop();
-    return () => clearTimeout(blinkTimeout);
-  }, []);
-
-  useEffect(() => {
-    // --- 2. CURSOR TRACKING ANIMATION ---
-    let idleResetTimeout: ReturnType<typeof setTimeout>;
-
     const handleMouseMove = (e: MouseEvent) => {
-      // Interaction Rule: On mobile (<768px), cursor tracking is disabled
-      if (window.innerWidth < 768) return;
-
+      // Calculate smooth offset
       const { innerWidth, innerHeight } = window;
-      
-      // Normalize mouse position (-1 to 1)
+      const range = 10; // 10px movement radius
       const xPct = (e.clientX / innerWidth - 0.5) * 2;
       const yPct = (e.clientY / innerHeight - 0.5) * 2;
-
-      // Interaction Rule: Eyes move within a small radius (12px)
-      const range = 12; 
+      
       mouseX.set(xPct * range);
       mouseY.set(yPct * range);
-
-      // Interaction Rule: If cursor stops for 2s -> return to idle (center)
-      clearTimeout(idleResetTimeout);
-      idleResetTimeout = setTimeout(() => {
-        mouseX.set(0);
-        mouseY.set(0);
-      }, 2000);
     };
 
     window.addEventListener('mousemove', handleMouseMove);
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      clearTimeout(idleResetTimeout);
-    };
+    return () => window.removeEventListener('mousemove', handleMouseMove);
   }, [mouseX, mouseY]);
 
-  return (
-    // Visual Design: Soft white glow, slight shadow
-    <div className="relative w-32 h-32 md:w-48 md:h-48 filter drop-shadow-[0_0_30px_rgba(255,255,255,0.15)]">
-      <svg viewBox="0 0 200 200" className="w-full h-full overflow-visible">
-        <defs>
-          <radialGradient id="moonGradient" cx="35%" cy="35%" r="65%">
-            <stop offset="0%" stopColor="#FFFFFF" />
-            <stop offset="100%" stopColor="#FFFDE7" /> {/* Subtle yellow tint */}
-          </radialGradient>
-        </defs>
-        
-        {/* Moon Base */}
-        <circle cx="100" cy="100" r="95" fill="url(#moonGradient)" />
-        
-        {/* Subtle Craters for texture (Premium feel) */}
-        <circle cx="60" cy="60" r="12" fill="rgba(220,220,230,0.2)" />
-        <circle cx="140" cy="130" r="18" fill="rgba(220,220,230,0.15)" />
-        <circle cx="90" cy="160" r="8" fill="rgba(220,220,230,0.1)" />
+  // --- BLINK ANIMATION (Random 1-2s) ---
+  useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout>;
+    const cycleBlink = () => {
+      const delay = Math.random() * 1000 + 1000; // 1s to 2s
+      timeoutId = setTimeout(() => {
+        setIsBlinking(true);
+        setTimeout(() => setIsBlinking(false), 180); // Fast blink
+        cycleBlink();
+      }, delay);
+    };
+    cycleBlink();
+    return () => clearTimeout(timeoutId);
+  }, []);
 
-        {/* Eyes Group - Moves with Cursor */}
-        <motion.g style={{ x, y }}>
-           {/* Left Eye */}
-           <motion.ellipse 
-             cx="70" cy="85" 
-             rx="8" ry={12} 
-             fill="#1a1a1a"
-             animate={{ 
-               scaleY: isBlinking ? 0.1 : 1, // Squash effect for blink
-             }}
-             transition={{ duration: 0.1 }}
-           />
-           
-           {/* Right Eye */}
-           <motion.ellipse 
-             cx="130" cy="85" 
-             rx="8" ry={12} 
-             fill="#1a1a1a" 
-             animate={{ 
-               scaleY: isBlinking ? 0.1 : 1 
-             }}
-             transition={{ duration: 0.1 }}
-           />
-           
-           {/* Eye Shine (Cute Factor) - Hidden during blink */}
-           <motion.g animate={{ opacity: isBlinking ? 0 : 1 }}>
-             <circle cx="74" cy="80" r="3" fill="white" opacity="0.9" />
-             <circle cx="134" cy="80" r="3" fill="white" opacity="0.9" />
-           </motion.g>
-        </motion.g>
-        
-        {/* Cheeks (Subtle cute detail) */}
-        <ellipse cx="60" cy="105" rx="10" ry="5" fill="#FFB6C1" opacity="0.3" />
-        <ellipse cx="140" cy="105" rx="10" ry="5" fill="#FFB6C1" opacity="0.3" />
-      </svg>
+  // --- SMILE ANIMATION (Every 3-4s) ---
+  useEffect(() => {
+    let timeoutId: ReturnType<typeof setTimeout>;
+    const cycleSmile = () => {
+      const delay = Math.random() * 1000 + 3000; // 3s to 4s
+      timeoutId = setTimeout(() => {
+        setIsSmiling(true);
+        setTimeout(() => setIsSmiling(false), 2000); // Hold smile
+        cycleSmile();
+      }, delay);
+    };
+    cycleSmile();
+    return () => clearTimeout(timeoutId);
+  }, []);
+
+  return (
+    // CSS & HTML STRUCTURE
+    // Strict positioning per user request: Top-Right
+    <div 
+      className="absolute pointer-events-none opacity-90"
+      style={{ 
+        position: 'absolute', 
+        right: '12%', 
+        top: '8%', 
+        zIndex: -1 
+      }}
+    >
+      <div className="relative w-32 h-32 md:w-56 md:h-56 filter drop-shadow-[0_0_40px_rgba(255,216,90,0.3)]">
+        <svg viewBox="0 0 200 200" className="w-full h-full overflow-visible">
+          <defs>
+            <radialGradient id="moonGradient" cx="35%" cy="35%" r="65%">
+              <stop offset="0%" stopColor="#FFFFFF" />
+              <stop offset="100%" stopColor="#FFFDE7" />
+            </radialGradient>
+          </defs>
+          
+          {/* Moon Body */}
+          <circle cx="100" cy="100" r="90" fill="url(#moonGradient)" />
+          
+          {/* Subtle Craters */}
+          <circle cx="60" cy="60" r="10" fill="rgba(220,220,230,0.2)" />
+          <circle cx="140" cy="130" r="15" fill="rgba(220,220,230,0.15)" />
+          
+          {/* EYES GROUP - Follows Cursor */}
+          <motion.g style={{ x, y }}>
+             {/* Left Eye */}
+             <motion.ellipse 
+               cx="70" cy="85" 
+               rx="8" ry={12} 
+               fill="#1a1a1a"
+               animate={{ scaleY: isBlinking ? 0.1 : 1 }}
+               transition={{ duration: 0.1 }}
+             />
+             {/* Right Eye */}
+             <motion.ellipse 
+               cx="130" cy="85" 
+               rx="8" ry={12} 
+               fill="#1a1a1a" 
+               animate={{ scaleY: isBlinking ? 0.1 : 1 }}
+               transition={{ duration: 0.1 }}
+             />
+             {/* Eye Shine */}
+             <motion.g animate={{ opacity: isBlinking ? 0 : 1 }}>
+               <circle cx="74" cy="80" r="3" fill="white" opacity="0.9" />
+               <circle cx="134" cy="80" r="3" fill="white" opacity="0.9" />
+             </motion.g>
+          </motion.g>
+          
+          {/* MOUTH GROUP */}
+          <g transform="translate(100, 115)">
+            {/* Neutral Mouth (Fades out when smiling) */}
+            <motion.path 
+              d="M -10 0 Q 0 5 10 0" 
+              fill="none" 
+              stroke="#1a1a1a" 
+              strokeWidth="2" 
+              strokeLinecap="round"
+              animate={{ opacity: isSmiling ? 0 : 0.5 }}
+            />
+            
+            {/* Smile (Fades in and scales) */}
+            <motion.path 
+              d="M -15 -2 Q 0 15 15 -2" 
+              fill="none" 
+              stroke="#1a1a1a" 
+              strokeWidth="3" 
+              strokeLinecap="round"
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ 
+                opacity: isSmiling ? 1 : 0,
+                scale: isSmiling ? 1.1 : 0.8,
+                y: isSmiling ? 0 : -2
+              }}
+              transition={{ duration: 0.4 }}
+            />
+          </g>
+          
+          {/* Cheeks (Appear with smile) */}
+          <motion.g animate={{ opacity: isSmiling ? 0.6 : 0 }}>
+             <ellipse cx="60" cy="105" rx="10" ry="6" fill="#FFB6C1" />
+             <ellipse cx="140" cy="105" rx="10" ry="6" fill="#FFB6C1" />
+          </motion.g>
+
+        </svg>
+      </div>
     </div>
   );
 };
