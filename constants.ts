@@ -7,9 +7,10 @@ export const DUBAI_BG_URL = "https://images.unsplash.com/photo-1512453979798-5ea
 // Currently pointing to a public Three.js example model to ensure the app loads without 404 errors
 export const ROBOT_ASSETS = {
   // GLTF Models (Draco Compressed recommended)
-  HIGH: 'https://threejs.org/examples/models/gltf/RobotExpressive/RobotExpressive.glb', 
-  MED: 'https://threejs.org/examples/models/gltf/RobotExpressive/RobotExpressive.glb',
-  LOW: 'https://threejs.org/examples/models/gltf/RobotExpressive/RobotExpressive.glb',
+  // Switched to GitHub Raw for better reliability/CORS handling than the website URL
+  HIGH: 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/models/gltf/RobotExpressive/RobotExpressive.glb', 
+  MED: 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/models/gltf/RobotExpressive/RobotExpressive.glb',
+  LOW: 'https://raw.githubusercontent.com/mrdoob/three.js/master/examples/models/gltf/RobotExpressive/RobotExpressive.glb',
   
   // Fallback Image (WebP)
   FALLBACK_IMAGE: 'https://images.unsplash.com/photo-1485827404703-89b55fcc595e?q=80&w=1000&auto=format&fit=crop'
@@ -31,7 +32,7 @@ export const BEE_CONFIG = {
   SPEED_RANGE: [0.8, 1.5],
   WANDER_INTERVAL: [2000, 6000],
   AVOID_RADIUS_PX: 120,
-  SCALE: 0.15 // Updated to 0.45 in prompt but keeping existing consistent unless requested
+  SCALE: 0.45 
 };
 
 export const LINKS = {
@@ -83,91 +84,106 @@ export const TESTIMONIALS = [
     name: "Sarah Jenkins",
     role: "CMO, Global Tech",
     text: "Shoeb's approach to performance marketing transformed our quarterly revenue. The ROI was immediate.",
-    rating: 5
+    rating: 5,
+    logo: ""
   },
   {
     name: "Ahmed Al-Fayed",
     role: "Founder, Dubai Real Estate",
     text: "World-class delivery. The AI automation systems saved us 40+ hours a week.",
-    rating: 5
+    rating: 5,
+    logo: ""
   },
   {
     name: "Rajiv Mehta",
     role: "Director, FinServ",
     text: "Exceptional grasp of Data Science applied to sales. Highly recommended for scaling businesses.",
-    rating: 5
+    rating: 5,
+    logo: ""
   },
   {
     name: "Elena Rossi",
     role: "VP Marketing, Luxe Fashion",
     text: "The strategic paid ads campaigns doubled our ROAS within two months. A true partner in growth.",
-    rating: 5
+    rating: 5,
+    logo: ""
   },
   {
     name: "David Chen",
     role: "CEO, TechStart",
     text: "Shoeb's predictive ML models helped us identify high-value clients we were previously missing.",
-    rating: 5
+    rating: 5,
+    logo: ""
   },
   {
     name: "Fatima Hassan",
     role: "Operations Lead, Logistics Co",
     text: "Automating our lead gen funnel saved our team countless hours. The system runs flawlessly.",
-    rating: 5
+    rating: 5,
+    logo: ""
   },
   {
     name: "James Wilson",
     role: "Founder, Wilson & Partners",
     text: "Professional, data-driven, and results-oriented. The best digital strategist we've worked with.",
-    rating: 5
+    rating: 5,
+    logo: ""
   },
   {
     name: "Maria Garcia",
     role: "Head of Growth, EduTech",
     text: "The content marketing strategy established us as thought leaders in a crowded market.",
-    rating: 5
+    rating: 5,
+    logo: ""
   },
   {
     name: "Omar Siddiqui",
     role: "Director, Creative Agency",
     text: "Shoeb brings a rare combination of creative flair and analytical rigor. Outstanding results.",
-    rating: 5
+    rating: 5,
+    logo: ""
   },
   {
     name: "Jennifer Lee",
     role: "SVP, Banking Corp",
     text: "His insights into customer segmentation allowed us to personalize our outreach effectively.",
-    rating: 5
+    rating: 5,
+    logo: ""
   },
   {
     name: "Michael Brown",
     role: "Owner, E-com Giant",
     text: "Scaled our ad spend 5x while maintaining profitability. The numbers speak for themselves.",
-    rating: 5
+    rating: 5,
+    logo: ""
   },
   {
     name: "Priya Patel",
     role: "CMO, Wellness Brand",
     text: "A seamless experience from strategy to execution. Our brand visibility has never been higher.",
-    rating: 5
+    rating: 5,
+    logo: ""
   },
   {
     name: "Thomas Anderson",
     role: "CTO, Software Solutions",
     text: "The AI agents deployed for customer support reduced ticket resolution time by 60%.",
-    rating: 5
+    rating: 5,
+    logo: ""
   },
   {
     name: "Sophie Martin",
     role: "Founder, Design Studio",
     text: "Shoeb understands the nuances of luxury marketing. Our high-ticket sales increased significantly.",
-    rating: 5
+    rating: 5,
+    logo: ""
   },
   {
     name: "Daniel Kim",
     role: "Director of Sales, AutoGroup",
     text: "The lead generation system delivers qualified prospects consistently. A game changer.",
-    rating: 5
+    rating: 5,
+    logo: ""
   }
 ];
 
